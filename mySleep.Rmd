@@ -1,0 +1,53 @@
+---
+title: "My Sleep Data"
+author: "Jane Chen"
+date: "04/05/2017"
+output: html_document
+---
+
+## Data Overview 
+```{r 1stChunk, echo = FALSE}
+install.packages("lubridate", repos = "http://cran.r-project.org"); library(lubridate)
+install.packages("dplyr", repos = "http://cran.r-project.org"); library(dplyr)
+setwd("~/Desktop/OneDrive/Documents/Data Science/Coursera Files/Course 09 Developing Data products/week3")
+mySleep <- read.csv("mySleep.csv")
+mySleep$Start.Time <- dmy_hm(mySleep$Start.Time)
+mySleep$End.Time <- dmy_hm(mySleep$End.Time)
+head(mySleep)
+```
+This is my sleep time from 17 September 2016 to 18 November 2016. I want to creat a column plot indicating the average hour of sleep for each day, Monday to Sunday. 
+# ```{r weekdayTrial}
+mySleep$Time <- strftime(mySleep$Start.Time, format = "%H:%M", tz = "Pacific")
+for(i in 1:nrow(mySleep)) {
+    if(mySleep$Time[i] < "12:00") {
+        mySleep$Date[i] <- date(mySleep$Start.Time)[i] - 1
+    } else {
+        mySleep$Date[i] <- date(mySleep$Start.Time)[i]
+    }
+}
+mySleep$Weekday <- wday(mySleep$Date, label = TRUE)
+head(mySleep)
+# ```
+
+Try hourly average
+```{r hourlyTrial}
+date <- c(20160918:20160930, 20161001:20161031, 20161101:20161118)
+date <- ymd(date)
+hourlySleep <- data.frame(date)
+empty <- numeric(nrow(hourlySleep))
+hourlySleep[, paste(0:23, ":", 0, 0, sep = "")] <- empty
+time <- paste(0:24, ":", 0, 0, sep = "")
+for (i in 1:nrow(hourlySleep)) {
+    for (j in 1:24) {
+        for (l in 1:nrow(mySleep)) { 
+            if(paste(date[i], time[j+1]) > mySleep$Start.Time & paste(date[i], time[j] <= mySleep$End.Time)) {
+                hourlySleep[i, j+1] <- 1
+            } else {
+                hourlySleep[i, j+1] <- 0
+            }
+        }
+    }
+}
+# paste(hourlySleep$date[i], names(hourlySleep)[j+1]) <= mySleep$Start.Time[l] & mySleep$Start.Time[l] < paste(hourlySleep$date[i], names(hourlySleep)[j+2])
+head(hourlySleep)
+```
